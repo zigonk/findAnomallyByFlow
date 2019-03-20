@@ -146,10 +146,37 @@ def computeImg(flow):
 	img = computeColor(u, v)
 	return img
 
+
+def writeFlowFile(flow, filename):
+
+	assert type(filename) is str, "file is not str %r" % str(filename)
+	assert filename[-4:] == '.flo', "file ending is not .flo %r" % file[-4:]
+
+	height, width, nBands = flow.shape
+	assert nBands == 2, "Number of bands = %r != 2" % nBands
+	u = flow[:, :, 0]
+	v = flow[:, :, 1]
+	assert u.shape == v.shape, "Invalid flow shape"
+	height, width = u.shape
+
+	f = open(filename, 'wb')
+	f.write(TAG_STRING)
+	np.array(width).astype(np.int32).tofile(f)
+	np.array(height).astype(np.int32).tofile(f)
+	tmp = np.zeros((height, width*nBands))
+	tmp[:, np.arange(width)*2] = u
+	tmp[:, np.arange(width)*2 + 1] = v
+	tmp.astype(np.float32).tofile(f)
+
+	f.close()
+
+
 MOVING_THRESHOLD = 0
 ANOMALY_THRESHOLD = 0.1
 STALLING_PIXELS_COUNT_THRESHOLD = 100
 ANOMALY_PIXELS_COUNT_THRESHOLD = 100
+RANGE_L =	600
+RANGE_R = 825
 
 def processInputFlow(flow):
 
@@ -167,7 +194,7 @@ def preprocess(flowfileFolder):
 		list = os.listdir(flowfileFolder)  # dir is your directory path
 
 		# for i in range(number_files):
-		for i in range(200, 1000):
+		for i in range(RANGE_L, RANGE_R):
         # index = (i + 1) * 2
 				index = i
 				if (index % 50 == 0):
@@ -187,9 +214,12 @@ def calculateAvgTable():
 				avgTable[i][j] = [(float(x) / float(max(cTable[i][j], 1.0))) for x in vTable[i][j]]
 				if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] == 1):
 					stalling_pixels += 1
-				if (np.linalg.norm(avgTable) != np.linalg.norm(vTable[i][j]) / float(max(cTable[i][j], 1.0))):
-					print(' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
+				# if (np.linalg.norm(avgTable) != np.linalg.norm(vTable[i][j]) / float(max(cTable[i][j], 1.0))):
+				# 	print(' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
 
+
+		location = '/content/drive/My Drive/PWC-Net/flow/avg91.flo'
+		writeFlowFile(avgTable, location)
 
 		if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
 			print('[ANOMALY]: stalling vehicle')
@@ -215,7 +245,7 @@ def findingAnomaly(flowfileFolder):
 		number_files = len(list)
 
 		# for i in range(number_files):
-		for i in range(200, 1000):
+		for i in range(RANGE_L, RANGE_R):
 				# index = (i + 1) * 2
 				index = i
 				if (index % 50 == 0):
