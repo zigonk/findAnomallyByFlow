@@ -151,21 +151,21 @@ MOVING_THRESHOLD = 0.00
 ANOMALY_THRESHOLD = 0.1
 STALLING_PIXELS_COUNT_THRESHOLD = 10
 ANOMALY_PIXELS_COUNT_THRESHOLD = 10
-MIN_PIXELS_IN_GROUP = 20
-GROUP_SIZE = 5 # 10x10
-RANGE_L =	600
-RANGE_R = 900
+MIN_PIXELS_IN_GROUP = 5
+GROUP_SIZE = 2 # 10x10
+RANGE_L =	100
+RANGE_R = 110
 
 def processInputFlow(flow):
-	width = flow.shape[0]
-	height = flow.shape[1]
+	height = flow.shape[0]
+	width = flow.shape[1]
 
-	for i in range(width):
-		for j in range(height):
+	for i in range(height):
+		for j in range(width):
 			sum = [0, 0]
 			count = 0
-			for k1 in range(max(0, i - GROUP_SIZE), min(999, i + GROUP_SIZE + 1)):
-				for k2 in range(max(0, j - GROUP_SIZE), min(999, j + GROUP_SIZE + 1)):
+			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
+				for k2 in range(max(0, j - GROUP_SIZE), min(width, j + GROUP_SIZE + 1)):
 					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
 					sum[0] += flow[k1][k2][0]
 					sum[1] += flow[k1][k2][1]
@@ -188,7 +188,7 @@ def preprocess(flowfileFolder):
 		# index = (i + 1) * 2
 		index = i
 		if (index % 50 == 0):
-				print('Preprocessing %d . . .' % index)
+			print('Preprocessing %d . . .' % index)
 		flowPath = os.path.join(flowfileFolder, 'flow%d.flo' % index)
 		flow = readFlowFile(flowPath)
 
@@ -209,16 +209,16 @@ def calculateAvgTable():
 		print('[ANOMALY]: stalling vehicle')
 
 def detectAnomaly(flow, frameIndex):
-	width = flow.shape[0]
-	height = flow.shape[1]
+	height = flow.shape[0]
+	width = flow.shape[1]
 	anomaly_pixels_count = 0
 
-	for i in range(width):
-		for j in range(height):
+	for i in range(height):
+		for j in range(width):
 			sum = [0, 0]
 			count = 0
-			for k1 in range(max(0, i - GROUP_SIZE), min(999, i + GROUP_SIZE + 1)):
-				for k2 in range(max(0, j - GROUP_SIZE), min(999, j + GROUP_SIZE + 1)):
+			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
+				for k2 in range(max(0, j - GROUP_SIZE), min(width, j + GROUP_SIZE + 1)):
 					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
 					sum[0] += flow[k1][k2][0]
 					sum[1] += flow[k1][k2][1]
@@ -273,6 +273,7 @@ def readFlowFile(file):
 
 def main():
 	flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
+	# flowfileFolder = './flow'
 	preprocess(flowfileFolder)
 	calculateAvgTable()
 	findingAnomaly(flowfileFolder)
