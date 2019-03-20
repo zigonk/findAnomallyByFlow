@@ -167,7 +167,7 @@ def preprocess(flowfileFolder):
 		list = os.listdir(flowfileFolder)  # dir is your directory path
 
 		# for i in range(number_files):
-		for i in range(450, 750):
+		for i in range(200, 1000):
         # index = (i + 1) * 2
 				index = i
 				if (index % 50 == 0):
@@ -215,7 +215,7 @@ def findingAnomaly(flowfileFolder):
 		number_files = len(list)
 
 		# for i in range(number_files):
-		for i in range(450, 750):
+		for i in range(200, 1000):
 				# index = (i + 1) * 2
 				index = i
 				if (index % 50 == 0):
