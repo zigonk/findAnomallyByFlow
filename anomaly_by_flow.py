@@ -147,30 +147,6 @@ def computeImg(flow):
 	return img
 
 
-def writeFlowFile(flow, filename):
-
-	assert type(filename) is str, "file is not str %r" % str(filename)
-	assert filename[-4:] == '.flo', "file ending is not .flo %r" % file[-4:]
-
-	height, width, nBands = flow.shape
-	assert nBands == 2, "Number of bands = %r != 2" % nBands
-	u = flow[:, :, 0]
-	v = flow[:, :, 1]
-	assert u.shape == v.shape, "Invalid flow shape"
-	height, width = u.shape
-
-	f = open(filename, 'wb')
-	f.write(TAG_STRING)
-	np.array(width).astype(np.int32).tofile(f)
-	np.array(height).astype(np.int32).tofile(f)
-	tmp = np.zeros((height, width*nBands))
-	tmp[:, np.arange(width)*2] = u
-	tmp[:, np.arange(width)*2 + 1] = v
-	tmp.astype(np.float32).tofile(f)
-
-	f.close()
-
-
 MOVING_THRESHOLD = 0.001
 ANOMALY_THRESHOLD = 0.1
 STALLING_PIXELS_COUNT_THRESHOLD = 50
@@ -179,113 +155,111 @@ RANGE_L =	600
 RANGE_R = 900
 
 def processInputFlow(flow):
+	width = flow.shape[0]
+	height = flow.shape[1]
 
-		width = flow.shape[0]
-		height = flow.shape[1]
-
-		for i in range(width):
-				for j in range(height):
-						if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
-							# vTable[i][j] += flow[i][j]
-							vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
-							cTable[i][j] += 1
+	for i in range(width):
+		for j in range(height):
+			if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+				# vTable[i][j] += flow[i][j]
+				vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
+				cTable[i][j] += 1
 
 def preprocess(flowfileFolder):
-		list = os.listdir(flowfileFolder)  # dir is your directory path
+	list = os.listdir(flowfileFolder)  # dir is your directory path
 
-		# for i in range(number_files):
-		for i in range(RANGE_L, RANGE_R):
-        # index = (i + 1) * 2
-				index = i
-				if (index % 50 == 0):
-						print('Preprocessing %d . . .' % index)
-				flowPath = os.path.join(flowfileFolder, 'flow%d.flo' % index)
-				flow = readFlowFile(flowPath)
+	# for i in range(number_files):
+	for i in range(RANGE_L, RANGE_R):
+		# index = (i + 1) * 2
+		index = i
+		if (index % 50 == 0):
+				print('Preprocessing %d . . .' % index)
+		flowPath = os.path.join(flowfileFolder, 'flow%d.flo' % index)
+		flow = readFlowFile(flowPath)
 
-				processInputFlow(flow)
+		processInputFlow(flow)
 
 def calculateAvgTable():
-		print('Calculating avgTable . . .')
+	print('Calculating avgTable . . .')
 
-		stalling_pixels = 0
+	stalling_pixels = 0
 
-		for i in range(1000):
-			for j in range(1000):
-				sum = [0, 0]
-				count = 0
-				for k1 in range(max(0, i - 2), min(999, i + 3)):
-					for k2 in range(max(0, j - 2), min(999, j + 3)):
-						sum[0] += vTable[k1][k2][0]
-						sum[1] += vTable[k1][k2][1]
-						count += cTable[k1][k2]
-				avgTable[i][j] = [(float(x) / float(max(count, 1.0))) for x in sum]
-				if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] == 1):
-					stalling_pixels += 1
+	for i in range(1000):
+		for j in range(1000):
+			sum = [0, 0]
+			count = 0
+			for k1 in range(max(0, i - 2), min(999, i + 3)):
+				for k2 in range(max(0, j - 2), min(999, j + 3)):
+					sum[0] += vTable[k1][k2][0]
+					sum[1] += vTable[k1][k2][1]
+					count += cTable[k1][k2]
+			avgTable[i][j] = [(float(x) / float(max(count, 1.0))) for x in sum]
+			if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] == 1):
+				stalling_pixels += 1
 
-		if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
-			print('[ANOMALY]: stalling vehicle')
+	if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
+		print('[ANOMALY]: stalling vehicle')
 
 def detectAnomaly(flow, frameIndex):
-		width = flow.shape[0]
-		height = flow.shape[1]
-		anomaly_pixels_count = 0
-		printed = False
+	width = flow.shape[0]
+	height = flow.shape[1]
+	anomaly_pixels_count = 0
+	printed = False
 
-		for i in range(width):
-				for j in range(height):
-						if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
-								diff = [x - y for x, y in zip(avgTable[i][j], flow[i][j])]
-								if (not(printed) and np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
-									anomaly_pixels_count += 1
-									# print('[FRAME] ', frameIndex, ' Flow: ', flow[i][j], ' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
-									printed = True
-		print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
-		if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
-			print('[ANOMALY] Frame index: ', frameIndex)
+	for i in range(width):
+		for j in range(height):
+			if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+				diff = [x - y for x, y in zip(avgTable[i][j], flow[i][j])]
+				if (not(printed) and np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+					anomaly_pixels_count += 1
+					# print('[FRAME] ', frameIndex, ' Flow: ', flow[i][j], ' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
+					printed = True
+	print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
+	if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
+		print('[ANOMALY] Frame index: ', frameIndex)
 
 
 def findingAnomaly(flowfileFolder):
-		list = os.listdir(flowfileFolder)  # dir is your directory path
-		number_files = len(list)
+	list = os.listdir(flowfileFolder)  # dir is your directory path
+	number_files = len(list)
 
-		# for i in range(number_files):
-		for i in range(RANGE_L, RANGE_R):
-				# index = (i + 1) * 2
-				index = i
-				if (index % 50 == 0):
-						print('Running %d . . .' % index)
-				flowPath = os.path.join(flowfileFolder, 'flow%d.flo' % index)
-				flow = readFlowFile(flowPath)
+	# for i in range(number_files):
+	for i in range(RANGE_L, RANGE_R):
+		# index = (i + 1) * 2
+		index = i
+		if (index % 50 == 0):
+				print('Running %d . . .' % index)
+		flowPath = os.path.join(flowfileFolder, 'flow%d.flo' % index)
+		flow = readFlowFile(flowPath)
 
-				detectAnomaly(flow, index)
+		detectAnomaly(flow, index)
 
 
 def readFlowFile(file):
-    assert type(file) is str, "file is not str %r" % str(file)
-    assert os.path.isfile(file) is True, "file does not exist %r" % str(file)
-    assert file[-4:] == '.flo', "file ending is not .flo %r" % file[-4:]
-    f = open(file, 'rb')
-    flo_number = np.fromfile(f, np.float32, count=1)[0]
-    assert flo_number == TAG_FLOAT, 'Flow number %r incorrect. Invalid .flo file' % flo_number
-    w = np.fromfile(f, np.int32, count=1)
-    h = np.fromfile(f, np.int32, count=1)
-    # if error try: data = np.fromfile(f, np.float32, count=2*w[0]*h[0])
-    # data = np.fromfile(f, np.float32, count=2*w*h)
-    data = np.fromfile(f, np.float32, count=2*w[0]*h[0])
+	assert type(file) is str, "file is not str %r" % str(file)
+	assert os.path.isfile(file) is True, "file does not exist %r" % str(file)
+	assert file[-4:] == '.flo', "file ending is not .flo %r" % file[-4:]
+	f = open(file, 'rb')
+	flo_number = np.fromfile(f, np.float32, count=1)[0]
+	assert flo_number == TAG_FLOAT, 'Flow number %r incorrect. Invalid .flo file' % flo_number
+	w = np.fromfile(f, np.int32, count=1)
+	h = np.fromfile(f, np.int32, count=1)
+	# if error try: data = np.fromfile(f, np.float32, count=2*w[0]*h[0])
+	# data = np.fromfile(f, np.float32, count=2*w*h)
+	data = np.fromfile(f, np.float32, count=2*w[0]*h[0])
 
-    # Reshape data into 3D array (columns, rows, bands)
-    flow = np.resize(data, (int(h), int(w), 2))
-    f.close()
+	# Reshape data into 3D array (columns, rows, bands)
+	flow = np.resize(data, (int(h), int(w), 2))
+	f.close()
 
-    return flow
+	return flow
 
 
 def main():
-	# ...
-  flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
-  preprocess(flowfileFolder)
-  calculateAvgTable()
-  findingAnomaly(flowfileFolder)
+	flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
+	preprocess(flowfileFolder)
+	calculateAvgTable()
+	findingAnomaly(flowfileFolder)
 
 
 main()
