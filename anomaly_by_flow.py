@@ -282,10 +282,10 @@ def readFlowFile(file):
 
 def main():
 	# ...
-	flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
-	preprocess(flowfileFolder)
-	calculateAvgTable()
-	findingAnomaly(flowfileFolder)
+  flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
+  preprocess(flowfileFolder)
+  calculateAvgTable()
+  findingAnomaly(flowfileFolder)
 
 
 main()
