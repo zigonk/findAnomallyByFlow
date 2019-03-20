@@ -147,11 +147,12 @@ def computeImg(flow):
 	return img
 
 
-MOVING_THRESHOLD = 0.001
+MOVING_THRESHOLD = 0.00
 ANOMALY_THRESHOLD = 0.1
-STALLING_PIXELS_COUNT_THRESHOLD = 50
-ANOMALY_PIXELS_COUNT_THRESHOLD = 50
-GROUP_SIZE = 2 # 5x5
+STALLING_PIXELS_COUNT_THRESHOLD = 10
+ANOMALY_PIXELS_COUNT_THRESHOLD = 10
+MIN_PIXELS_IN_GROUP = 20
+GROUP_SIZE = 5 # 10x10
 RANGE_L =	600
 RANGE_R = 900
 
@@ -161,10 +162,23 @@ def processInputFlow(flow):
 
 	for i in range(width):
 		for j in range(height):
-			if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+			sum = [0, 0]
+			count = 0
+			for k1 in range(max(0, i - GROUP_SIZE), min(999, i + GROUP_SIZE + 1)):
+				for k2 in range(max(0, j - GROUP_SIZE), min(999, j + GROUP_SIZE + 1)):
+					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+					sum[0] += flow[k1][k2][0]
+					sum[1] += flow[k1][k2][1]
+					count += 1
+					sum[0] = sum[0] / float(max(1.0, count))
+					sum[1] = sum[1] / float(max(1.0, count))
+				if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
+					vTable[i][j][0] += sum[0]
+					vTable[i][j][1] += sum[1]
+					cTable[i][j] += 1
 				# vTable[i][j] += flow[i][j]
-				vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
-				cTable[i][j] += 1
+				# vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
+				# cTable[i][j] += 1
 
 def preprocess(flowfileFolder):
 	list = os.listdir(flowfileFolder)  # dir is your directory path
@@ -187,15 +201,8 @@ def calculateAvgTable():
 
 	for i in range(1000):
 		for j in range(1000):
-			sum = [0, 0]
-			count = 0
-			for k1 in range(max(0, i - GROUP_SIZE), min(999, i + GROUP_SIZE + 1)):
-				for k2 in range(max(0, j - GROUP_SIZE), min(999, j + GROUP_SIZE + 1)):
-					sum[0] += vTable[k1][k2][0]
-					sum[1] += vTable[k1][k2][1]
-					count += cTable[k1][k2]
-			avgTable[i][j] = [(float(x) / float(max(count, 1.0))) for x in sum]
-			if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] == 1):
+			avgTable[i][j] = [(float(x) / float(max(cTable[i][j], 1.0))) for x in vTable[i][j]]
+			if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] <= 15):
 				stalling_pixels += 1
 
 	if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
@@ -208,11 +215,21 @@ def detectAnomaly(flow, frameIndex):
 
 	for i in range(width):
 		for j in range(height):
-			if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
-				diff = [x - y for x, y in zip(avgTable[i][j], flow[i][j])]
-				if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
-					anomaly_pixels_count += 1
-					# print('[FRAME] ', frameIndex, ' Flow: ', flow[i][j], ' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
+			sum = [0, 0]
+			count = 0
+			for k1 in range(max(0, i - GROUP_SIZE), min(999, i + GROUP_SIZE + 1)):
+				for k2 in range(max(0, j - GROUP_SIZE), min(999, j + GROUP_SIZE + 1)):
+					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+					sum[0] += flow[k1][k2][0]
+					sum[1] += flow[k1][k2][1]
+					count += 1
+				# if (count >= MIN_PIXELS_IN_GROUP):
+					sum[0] = sum[0] / float(max(1.0, count))
+					sum[1] = sum[1] / float(max(1.0, count))
+				if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
+					diff = [x - y for x, y in zip(avgTable[i][j], sum)]
+					if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+						anomaly_pixels_count += 1
 	print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
 	if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
 		print('[ANOMALY] Frame index: ', frameIndex)
