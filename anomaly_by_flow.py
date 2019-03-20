@@ -218,8 +218,8 @@ def calculateAvgTable():
 				# 	print(' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
 
 
-		location = '/content/drive/My Drive/PWC-Net/flow/avg91.flo'
-		writeFlowFile(avgTable, location)
+		# location = '/content/drive/My Drive/PWC-Net/flow/avg91.flo'
+		# writeFlowFile(avgTable, location)
 
 		if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
 			print('[ANOMALY]: stalling vehicle')
