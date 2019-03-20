@@ -171,12 +171,12 @@ def writeFlowFile(flow, filename):
 	f.close()
 
 
-MOVING_THRESHOLD = 0
+MOVING_THRESHOLD = 0.001
 ANOMALY_THRESHOLD = 0.1
-STALLING_PIXELS_COUNT_THRESHOLD = 100
-ANOMALY_PIXELS_COUNT_THRESHOLD = 100
+STALLING_PIXELS_COUNT_THRESHOLD = 50
+ANOMALY_PIXELS_COUNT_THRESHOLD = 50
 RANGE_L =	600
-RANGE_R = 825
+RANGE_R = 900
 
 def processInputFlow(flow):
 
@@ -211,15 +211,16 @@ def calculateAvgTable():
 
 		for i in range(1000):
 			for j in range(1000):
-				avgTable[i][j] = [(float(x) / float(max(cTable[i][j], 1.0))) for x in vTable[i][j]]
+				sum = [0, 0]
+				count = 0
+				for k1 in range(max(0, i - 2), min(999, i + 3)):
+					for k2 in range(max(0, j - 2), min(999, j + 3)):
+						sum[0] += vTable[k1][k2][0]
+						sum[1] += vTable[k1][k2][1]
+						count += cTable[k1][k2]
+				avgTable[i][j] = [(float(x) / float(max(count, 1.0))) for x in sum]
 				if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] == 1):
 					stalling_pixels += 1
-				# if (np.linalg.norm(avgTable) != np.linalg.norm(vTable[i][j]) / float(max(cTable[i][j], 1.0))):
-				# 	print(' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
-
-
-		# location = '/content/drive/My Drive/PWC-Net/flow/avg91.flo'
-		# writeFlowFile(avgTable, location)
 
 		if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
 			print('[ANOMALY]: stalling vehicle')
@@ -228,14 +229,17 @@ def detectAnomaly(flow, frameIndex):
 		width = flow.shape[0]
 		height = flow.shape[1]
 		anomaly_pixels_count = 0
+		printed = False
 
 		for i in range(width):
 				for j in range(height):
 						if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
 								diff = [x - y for x, y in zip(avgTable[i][j], flow[i][j])]
-								if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+								if (not(printed) and np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
 									anomaly_pixels_count += 1
-									print('[FRAME] ', frameIndex, ' Flow: ', flow[i][j], ' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
+									# print('[FRAME] ', frameIndex, ' Flow: ', flow[i][j], ' Avg: ', avgTable[i][j], ' cTable: ', cTable[i][j], ' vTable: ', vTable[i][j],  'Pos: ', i, j)
+									printed = True
+		print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
 		if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
 			print('[ANOMALY] Frame index: ', frameIndex)
 
@@ -277,11 +281,10 @@ def readFlowFile(file):
 
 
 def main():
-    # flowfileFolder = '/content/drive/My Drive/AIC_2019_Train_Cut_abs(1)/flow/%d' % 95
-    flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
-    preprocess(flowfileFolder)
-    calculateAvgTable()
-    findingAnomaly(flowfileFolder)
+	flowfileFolder = '/content/drive/My Drive/PWC-Net/flow/%d' % 91
+	preprocess(flowfileFolder)
+	calculateAvgTable()
+	findingAnomaly(flowfileFolder)
 
 
 main()
