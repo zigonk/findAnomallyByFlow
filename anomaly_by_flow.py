@@ -146,9 +146,12 @@ def computeImg(flow):
 	img = computeColor(u, v)
 	return img
 
+MOVING_THRESHOLD = 0
+ANOMALY_THRESHOLD = 0.1
+STALLING_PIXELS_COUNT_THRESHOLD = 100
+ANOMALY_PIXELS_COUNT_THRESHOLD = 100
 
 def processInputFlow(flow):
-		MOVING_THRESHOLD = 10
 
 		width = flow.shape[0]
 		height = flow.shape[1]
@@ -159,7 +162,6 @@ def processInputFlow(flow):
 							# vTable[i][j] += flow[i][j]
 							vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
 							cTable[i][j] += 1
-                
 
 def preprocess(flowfileFolder):
 		list = os.listdir(flowfileFolder)  # dir is your directory path
@@ -175,11 +177,8 @@ def preprocess(flowfileFolder):
 
 				processInputFlow(flow)
 
-
 def calculateAvgTable():
 		print('Calculating avgTable . . .')
-		MOVING_THRESHOLD = 5
-		STALLING_PIXELS_COUNT_THRESHOLD = 50
 
 		stalling_pixels = 0
 
@@ -195,13 +194,7 @@ def calculateAvgTable():
 		if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
 			print('[ANOMALY]: stalling vehicle')
 
-
-
 def detectAnomaly(flow, frameIndex):
-		MOVING_THRESHOLD = 5
-		ANOMALY_THRESHOLD = 20
-		ANOMALY_PIXELS_COUNT_THRESHOLD = 50
-
 		width = flow.shape[0]
 		height = flow.shape[1]
 		anomaly_pixels_count = 0
