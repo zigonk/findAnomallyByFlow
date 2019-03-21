@@ -152,16 +152,17 @@ ANOMALY_THRESHOLD = 0.1
 STALLING_PIXELS_COUNT_THRESHOLD = 10
 ANOMALY_PIXELS_COUNT_THRESHOLD = 10
 MIN_PIXELS_IN_GROUP = 5
-GROUP_SIZE = 2 # 10x10
+GROUP_SIZE = 2 # 5x5
 RANGE_L =	600
 RANGE_R = 900
+STEP = 5
 
 def processInputFlow(flow):
 	height = flow.shape[0]
 	width = flow.shape[1]
 
-	for i in range(height):
-		for j in range(width):
+	for i in range(2, height, STEP):
+		for j in range(2, width, STEP):
 			sum = [0, 0]
 			count = 0
 			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
@@ -213,8 +214,8 @@ def detectAnomaly(flow, frameIndex):
 	width = flow.shape[1]
 	anomaly_pixels_count = 0
 
-	for i in range(height):
-		for j in range(width):
+	for i in range(2, height, STEP):
+		for j in range(2, width, STEP):
 			sum = [0, 0]
 			count = 0
 			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
