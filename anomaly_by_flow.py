@@ -170,12 +170,12 @@ def processInputFlow(flow):
 					sum[0] += flow[k1][k2][0]
 					sum[1] += flow[k1][k2][1]
 					count += 1
-					sum[0] = sum[0] / float(max(1.0, count))
-					sum[1] = sum[1] / float(max(1.0, count))
-				if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
-					vTable[i][j][0] += sum[0]
-					vTable[i][j][1] += sum[1]
-					cTable[i][j] += 1
+			sum[0] = sum[0] / float(max(1.0, count))
+			sum[1] = sum[1] / float(max(1.0, count))
+			if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
+				vTable[i][j][0] += sum[0]
+				vTable[i][j][1] += sum[1]
+				cTable[i][j] += 1
 				# vTable[i][j] += flow[i][j]
 				# vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
 				# cTable[i][j] += 1
@@ -224,12 +224,12 @@ def detectAnomaly(flow, frameIndex):
 					sum[1] += flow[k1][k2][1]
 					count += 1
 				# if (count >= MIN_PIXELS_IN_GROUP):
-					sum[0] = sum[0] / float(max(1.0, count))
-					sum[1] = sum[1] / float(max(1.0, count))
-				if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
-					diff = [x - y for x, y in zip(avgTable[i][j], sum)]
-					if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
-						anomaly_pixels_count += 1
+			sum[0] = sum[0] / float(max(1.0, count))
+			sum[1] = sum[1] / float(max(1.0, count))
+			if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
+				diff = [x - y for x, y in zip(avgTable[i][j], sum)]
+				if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+					anomaly_pixels_count += 1
 	print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
 	if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
 		print('[ANOMALY] Frame index: ', frameIndex)
