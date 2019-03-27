@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
+from scipy import signal
 import os
 import pylab
 
@@ -28,6 +29,15 @@ def readFlowFile(file):
     v = flow[: , : , 1]
     smaller_u = np.where(abs(u) < UNKNOWN_FLOW_THRESH)
     smaller_v = np.where(abs(v) < UNKNOWN_FLOW_THRESH)
+    u[smaller_u] = 0
+    u[smaller_v] = 0
+    v[smaller_u] = 0
+    v[smaller_v] = 0
+    u = signal.medfilt(u, 5)
+    v = signal.medfilt(v, 5)
+
+    smaller_u = np.where(abs(u) < UNKNOWN_FLOW_THRESH)
+    smaller_v = np.where(abs(v) < UNKNOWN_FLOW_THRESH)
     u[smaller_u] = -100
     u[smaller_v] = -100
     v[smaller_u] = -100
@@ -44,7 +54,7 @@ def readFlowFile(file):
 
 fig, ax = plt.subplots(tight_layout=True)
 
-for i in range(100, 301):
+for i in range(660, 825):
   print('../flow/flow%d.flo' % i)
   arr = readFlowFile('../flow/flow%d.flo' % i)
 
@@ -54,10 +64,7 @@ for i in range(100, 301):
     x.append(element[0])
     y.append(element[1])
 
-  hist = ax.hist2d(x, y, bins=100, range=[[-30, 30],[-30, 30]])
-  # plt.savefig('./plt/plt%d.png' % i)
-  plt.pause(0.001)
-
-plt.show()
+  hist = ax.hist2d(x, y, bins=100, range=[[-10, 10],[-10, 10]])
+  plt.savefig('./plt/plt%d.png' % i)
 
 
