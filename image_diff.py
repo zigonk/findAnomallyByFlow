@@ -13,6 +13,12 @@ import cv2
 # args = vars(ap.parse_args())
 
 def calculate_confidence(diff, x, y, w, h):
+	sumSimilarity = 0
+	for i in (x, x + w):
+		for j in (y, y + h):
+			sumSimilarity += diff[i][j]
+	return float(sumSimilarity) / float(255 * w * h)
+
 
 
 def calculate_diff(videoNo, A, B):
@@ -55,6 +61,8 @@ def calculate_diff(videoNo, A, B):
 		# bounding box on both input images to represent where the two
 		# images differ
 		(x, y, w, h) = cv2.boundingRect(c)
+		confidence = calculate_confidence(diff, x, y, w, h)
+		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 		cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
 		cv2.rectangle(imageB, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
