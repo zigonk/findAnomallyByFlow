@@ -15,7 +15,7 @@ import cv2
 def calculate_diff(videoNo, A, B):
 	# load the two input images
 	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, A)
-	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, B)
+	srcB = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, B)
 	imageA = cv2.imread(srcA)
 	imageB = cv2.imread(srcB)
 	# x = 690
