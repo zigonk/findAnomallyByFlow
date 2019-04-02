@@ -30,6 +30,8 @@ def calculate_diff(videoNo, A, B):
 		return
 	if not os.path.exists(srcB):
 		return
+	imageA = cv2.imread(srcA)
+	imageB = cv2.imread(srcB)
 	# x = 690
 	# y = 100
 	# h = 25
