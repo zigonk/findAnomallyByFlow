@@ -25,8 +25,12 @@ def calculate_diff(videoNo, A, B):
 	# load the two input images
 	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, A)
 	srcB = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, B)
-	imageA = cv2.imread(srcA)
-	imageB = cv2.imread(srcB)
+	try:
+		imageA = cv2.imread(srcA)
+		imageB = cv2.imread(srcB)
+	except:
+		print("Failed %s" % B)
+		return
 	# x = 690
 	# y = 100
 	# h = 25
@@ -43,7 +47,7 @@ def calculate_diff(videoNo, A, B):
 	# images, ensuring that the difference image is returned
 	(score, diff) = compare_ssim(grayA, grayB, full=True)
 	diff = (diff * 255).astype("uint8")
-	print("SSIM: {}".format(score))
+	# print("SSIM: {}".format(score))
 
 	# threshold the difference image, followed by finding contours to
 	# obtain the regions of the two input images that differ
@@ -62,7 +66,7 @@ def calculate_diff(videoNo, A, B):
 		# images differ
 		(x, y, w, h) = cv2.boundingRect(c)
 		confidence = calculate_confidence(diff, x, y, w, h)
-		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
 		cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
 		cv2.rectangle(imageB, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
@@ -89,6 +93,7 @@ def createDirectory(directory):
 FRAME_DISTANCE = 7
 
 for video in range(1, 101):
+	print("Processing %d" % video)
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
 	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
