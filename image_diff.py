@@ -12,6 +12,9 @@ import cv2
 #                 help="second")
 # args = vars(ap.parse_args())
 
+def calculate_confidence(diff, x, y, w, h):
+
+
 def calculate_diff(videoNo, A, B):
 	# load the two input images
 	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, A)
@@ -74,7 +77,6 @@ import os
 for video in range(1, 101):
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
-	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference")
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original" % video)
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff" % video)
