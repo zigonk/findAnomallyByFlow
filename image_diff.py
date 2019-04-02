@@ -14,8 +14,8 @@ import cv2
 
 def calculate_confidence(diff, x, y, w, h):
 	sumSimilarity = 0
-	for j in range(y, y + h):
-		for i in range(x, x + w):
+	for i in range(y, y + h):
+		for j in range(x, x + w):
 			sumSimilarity += diff[i][j]
 	return float(sumSimilarity) / float(255 * w * h)
 
