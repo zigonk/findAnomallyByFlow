@@ -3,6 +3,7 @@ from skimage.measure import compare_ssim
 import argparse
 import imutils
 import cv2
+import os
 
 # # construct the argument parse and parse the arguments
 # ap = argparse.ArgumentParser()
@@ -25,11 +26,9 @@ def calculate_diff(videoNo, A, B):
 	# load the two input images
 	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, A)
 	srcB = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, B)
-	try:
-		imageA = cv2.imread(srcA)
-		imageB = cv2.imread(srcB)
-	except:
-		print("Failed %s" % B)
+	if not os.path.exists(srcA):
+		return
+	if not os.path.exists(srcB):
 		return
 	# x = 690
 	# y = 100
@@ -66,7 +65,7 @@ def calculate_diff(videoNo, A, B):
 		# images differ
 		(x, y, w, h) = cv2.boundingRect(c)
 		confidence = calculate_confidence(diff, x, y, w, h)
-		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 0))
 		cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
 		cv2.rectangle(imageB, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
@@ -83,8 +82,6 @@ def calculate_diff(videoNo, A, B):
 	cv2.imwrite(srcOriginal, imageB)
 	cv2.imwrite(srcDiff, diff)
 	cv2.imwrite(srcThresh, thresh)
-
-import os
 
 def createDirectory(directory):
 	if not os.path.exists(directory):
