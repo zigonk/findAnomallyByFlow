@@ -87,6 +87,8 @@ def createDirectory(directory):
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 
+FRAME_DISTANCE = 7
+
 for video in range(1, 101):
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
@@ -98,8 +100,7 @@ for video in range(1, 101):
 	files = os.listdir(directory)
 	number_files = len(files)
 
-	for i in range(1, number_files):
+	for i in range(8, number_files):
+		previousFile = "%05d.jpg" % ((i - FRAME_DISTANCE) * 30)
 		currentFile = "%05d.jpg" % (i * 30)
-		if (previousFile):
-			calculate_diff(video, previousFile, currentFile)
-		previousFile = currentFile
+		calculate_diff(video, previousFile, currentFile)
