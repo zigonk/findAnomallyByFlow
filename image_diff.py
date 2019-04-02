@@ -74,6 +74,7 @@ import os
 for video in range(1, 101):
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
+	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference" % video)
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original" % video)
 	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff" % video)
