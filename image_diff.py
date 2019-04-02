@@ -14,8 +14,9 @@ import cv2
 
 def calculate_confidence(diff, x, y, w, h):
 	sumSimilarity = 0
-	for i in (x, x + w):
-		for j in (y, y + h):
+	print(x, y, w, h)
+	for i in range(x, x + w):
+		for j in range(y, y + h):
 			sumSimilarity += diff[i][j]
 	return float(sumSimilarity) / float(255 * w * h)
 
@@ -82,17 +83,23 @@ def calculate_diff(videoNo, A, B):
 
 import os
 
+def createDirectory(directory):
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+
 for video in range(1, 101):
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
-	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
-	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original" % video)
-	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff" % video)
-	os.mkdir("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video)
 
-	for filename in os.listdir(directory):
-			if filename.endswith(".jpg"):
-					currentFile = filename
-					if (previousFile):
-						calculate_diff(video, previousFile, currentFile)
-					previousFile = currentFile
+	files = os.listdir(directory)
+	number_files = len(files)
+
+	for i in range(1, number_files):
+		currentFile = "%05d.jpg" % (i * 30)
+		if (previousFile):
+			calculate_diff(video, previousFile, currentFile)
+		previousFile = currentFile
