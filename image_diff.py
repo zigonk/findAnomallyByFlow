@@ -62,6 +62,7 @@ def calculate_diff(videoNo, A, B):
 		# bounding box on both input images to represent where the two
 		# images differ
 		(x, y, w, h) = cv2.boundingRect(c)
+		print(c)
 		confidence = calculate_confidence(diff, x, y, w, h)
 		cv2.putText(imageB,"%f" % confidence, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 		cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
