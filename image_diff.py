@@ -91,7 +91,7 @@ def createDirectory(directory):
 
 FRAME_DISTANCE = 15
 
-for video in range(94, 101):
+for video in range(1, 101):
 	print("Processing %d" % video)
 	previousFile = None
 	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
