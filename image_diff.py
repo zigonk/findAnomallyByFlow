@@ -54,7 +54,7 @@ def calculate_diff(videoNo, A, B):
 	# obtain the regions of the two input images that differ
 	# thresh = cv2.threshold(diff, 0, 255,
 	#                        cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-	thresh = cv2.threshold(diff, 100, 255,
+	thresh = cv2.threshold(diff, 50, 255,
 												cv2.THRESH_BINARY_INV)[1]
 	cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
 													cv2.CHAIN_APPROX_SIMPLE)
@@ -89,7 +89,7 @@ def createDirectory(directory):
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 
-FRAME_DISTANCE = 7
+FRAME_DISTANCE = 15
 
 for video in range(1, 101):
 	print("Processing %d" % video)
@@ -103,7 +103,7 @@ for video in range(1, 101):
 	files = os.listdir(directory)
 	number_files = len(files)
 
-	for i in range(8, number_files):
+	for i in range(FRAME_DISTANCE + 1, number_files):
 		previousFile = "%05d.jpg" % ((i - FRAME_DISTANCE) * 30)
 		currentFile = "%05d.jpg" % (i * 30)
 		calculate_diff(video, previousFile, currentFile)
