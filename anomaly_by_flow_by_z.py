@@ -16,6 +16,7 @@ import numpy as np
 import argparse
 import os
 import cv2
+import math
 
 TAG_FLOAT = 202021.25
 
@@ -106,9 +107,12 @@ def computeColor(u, v):
 	return img.astype(np.uint8)
 
 global vTable, lTable, cTable
-vTable = [[[0, 0]] * 1000 for i in range(1001)]
-avgTable = [[[0, 0]] * 1000 for i in range(1001)]
-cTable = [[0] * 1000 for i in range(1001)]
+vTable = [[[0, 0]] * 1001 for i in range(1001)]
+radTable = np.zeros([1001,1001])
+avgTable = [[[0, 0]] * 1001 for i in range(1001)]
+cTable = np.zeros([1001,10001])
+rad = np.zeros([1001, 1001, 1001])
+radVar = np.zeros([1001, 1001])
 
 def computeImg(flow):
 
@@ -149,38 +153,46 @@ def computeImg(flow):
 
 
 MOVING_THRESHOLD = 1
-ANOMALY_THRESHOLD = 8
+ANOMALY_THRESHOLD = 0
 STALLING_PIXELS_COUNT_THRESHOLD = 10
-ANOMALY_PIXELS_COUNT_THRESHOLD = 10
+ANOMALY_PIXELS_COUNT_THRESHOLD = 25
 MIN_PIXELS_IN_GROUP = 5
-GROUP_SIZE = 2 # 5x5
-RANGE_L =	100
-RANGE_R = 300
-STEP = 5
+GROUP_SIZE = 25 # 5x5
+RANGE_L =	660
+RANGE_R = 825
+STEP = 51
+flowProcessing = 0
+HEIGHT = 0
+WIDTH = 0
 
 def processInputFlow(flow):
-	height = flow.shape[0]
-	width = flow.shape[1]
-
-	for i in range(2, height, STEP):
-		for j in range(2, width, STEP):
+	global HEIGHT, WIDTH
+	global flowProcessing
+	HEIGHT = flow.shape[0] - 25
+	WIDTH = flow.shape[1] -25
+	for i in range(25, HEIGHT, STEP):
+		for j in range(25, WIDTH, STEP):
 			sum = [0, 0]
 			count = 0
-			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
-				for k2 in range(max(0, j - GROUP_SIZE), min(width, j + GROUP_SIZE + 1)):
-					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
-					sum[0] += flow[k1][k2][0]
-					sum[1] += flow[k1][k2][1]
+			for k1 in range(max(0, i - GROUP_SIZE), min(HEIGHT + 25, i + GROUP_SIZE + 1)):
+				for k2 in range(max(0, j - GROUP_SIZE), min(WIDTH + 25, j + GROUP_SIZE + 1)):
+					if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+						len = pow((flow[k1][k2][0]**2 + flow[k1][k2][1]**2), 0.5)
+						sum[0] += flow[k1][k2][0]/len
+						sum[1] += flow[k1][k2][1]/len
 					count += 1
 			sum[0] = sum[0] / float(max(1.0, count))
 			sum[1] = sum[1] / float(max(1.0, count))
+			rad[i][j][flowProcessing] = math.atan2(sum[0], sum[1])
 			if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
 				vTable[i][j][0] += sum[0]
 				vTable[i][j][1] += sum[1]
 				cTable[i][j] += 1
+				radTable[i][j] += rad[i][j][flowProcessing]
 				# vTable[i][j] += flow[i][j]
 				# vTable[i][j] = [x + y for x, y in zip(vTable[i][j], flow[i][j])]
 				# cTable[i][j] += 1
+	flowProcessing += 1
 
 def preprocess(flowfileFolder):
 	list = os.listdir(flowfileFolder)  # dir is your directory path
@@ -201,12 +213,21 @@ def calculateAvgTable():
 
 	stalling_pixels = 0
 
-	for i in range(1000):
-		for j in range(1000):
+	for i in range(25, HEIGHT, STEP):
+		for j in range(25, WIDTH, STEP):
 			avgTable[i][j] = [(float(x) / float(max(cTable[i][j], 1.0))) for x in vTable[i][j]]
+			radTable[i][j] /= float(max(cTable[i][j], 1.0))
 			if (np.linalg.norm(avgTable[i][j]) >= MOVING_THRESHOLD and cTable[i][j] <= 15):
 				stalling_pixels += 1
-
+	for cnt in range(flowProcessing):
+		for i in range(25, HEIGHT, STEP):
+			for j in range(25, WIDTH, STEP):
+				radVar[i][j] += pow(rad[i][j][cnt] - radTable[i][j], 2)
+	for i in range(25, HEIGHT, STEP):
+		for j in range(25, WIDTH, STEP):
+			radVar[i][j] /= (flowProcessing + 1)
+			radVar[i][j] =  pow(radVar[i][j], 0.5)
+				
 	if (stalling_pixels >= STALLING_PIXELS_COUNT_THRESHOLD):
 		print('[ANOMALY]: stalling vehicle')
 
@@ -214,25 +235,30 @@ def detectAnomaly(flow, frameIndex):
 	height = flow.shape[0]
 	width = flow.shape[1]
 	anomaly_pixels_count = 0
-
-	for i in range(2, height, STEP):
-		for j in range(2, width, STEP):
+	img = computeImg(flow)
+	for i in range(25, HEIGHT, STEP):
+		for j in range(25, WIDTH, STEP):
 			sum = [0, 0]
 			count = 0
 			for k1 in range(max(0, i - GROUP_SIZE), min(height, i + GROUP_SIZE + 1)):
 				for k2 in range(max(0, j - GROUP_SIZE), min(width, j + GROUP_SIZE + 1)):
-					# if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
-					sum[0] += flow[k1][k2][0]
-					sum[1] += flow[k1][k2][1]
-					count += 1
+					if (np.linalg.norm(flow[i][j]) >= MOVING_THRESHOLD):
+						sum[0] += flow[k1][k2][0]
+						sum[1] += flow[k1][k2][1]
+						count += 1
 				# if (count >= MIN_PIXELS_IN_GROUP):
 			sum[0] = sum[0] / float(max(1.0, count))
 			sum[1] = sum[1] / float(max(1.0, count))
+			rad = math.atan2(sum[0], sum[1])
 			if (np.linalg.norm(sum) >= MOVING_THRESHOLD):
 				diff = [x - y for x, y in zip(avgTable[i][j], sum)]
-				if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+				# if (np.linalg.norm(diff) >= ANOMALY_THRESHOLD):
+				# 	anomaly_pixels_count += 1
+				if (abs(rad - radTable[i][j]) >= radVar[i][j]):
 					anomaly_pixels_count += 1
+					cv2.rectangle(img, (i-25,j-25) , (i+25, j+25), (0,255,0), 3)
 	print('[FRAME %d] Pixels count: %d' % (frameIndex, anomaly_pixels_count))
+	cv2.imwrite('./anomaly/%d.jpg' % frameIndex, img)
 	if (anomaly_pixels_count >= ANOMALY_PIXELS_COUNT_THRESHOLD):
 		print('[ANOMALY] Frame index: ', frameIndex)
 
@@ -274,7 +300,7 @@ def readFlowFile(file):
 
 
 def main():
-	flowfileFolder = '../flow/'
+	flowfileFolder = '../flow/91'
 	preprocess(flowfileFolder)
 	calculateAvgTable()
 	findingAnomaly(flowfileFolder)

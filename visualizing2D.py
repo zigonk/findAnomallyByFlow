@@ -33,15 +33,9 @@ def readFlowFile(file):
     u[smaller_v] = 0
     v[smaller_u] = 0
     v[smaller_v] = 0
-    u = signal.medfilt(u, 5)
-    v = signal.medfilt(v, 5)
+    # u = signal.medfilt(u, 5)
+    # v = signal.medfilt(v, 5)
 
-    smaller_u = np.where(abs(u) < UNKNOWN_FLOW_THRESH)
-    smaller_v = np.where(abs(v) < UNKNOWN_FLOW_THRESH)
-    u[smaller_u] = -100
-    u[smaller_v] = -100
-    v[smaller_u] = -100
-    v[smaller_v] = -100
     flow[: , : , 0] = u
     flow[: , : , 1] = v
     tmp = []
@@ -49,22 +43,46 @@ def readFlowFile(file):
       for element in row:
         tmp.append(element)
 
-    return tmp
+    # return tmp
+    return flow
 
 
 fig, ax = plt.subplots(tight_layout=True)
 
+x = []
+y = []
 for i in range(660, 825):
   print('../flow/flow%d.flo' % i)
   arr = readFlowFile('../flow/flow%d.flo' % i)
+  cnt = 0
+  mean_x = 0
+  mean_y = 0
+  for j in range(225, 250):
+    for k in range(350, 375):
+      mean_x += arr[j][k][0]
+      mean_y += arr[j][k][1]
+      cnt += 1
+  print(mean_x)
+  print(mean_y)
+  mean_x /= cnt
+  mean_y /= cnt
+  print(mean_x)
+  print(mean_y)
+  print(cnt)
+  if (abs(mean_x) < 0.5 and abs(mean_y) < 0.5):
+    continue
+  x.append(mean_x)
+  y.append(mean_y)
 
-  x = []
-  y = []
-  for element in arr:
-    x.append(element[0])
-    y.append(element[1])
+hist = ax.hist2d(x, y, bins=100, range=[[-5, 5],[-5, 5]])
+plt.savefig('./plt_mean%d.png' % i)
+  # x = []
+  # y = []
+  # for element in arr:
+  #   x.append(element[0])
+  #   y.append(element[1])
 
-  hist = ax.hist2d(x, y, bins=100, range=[[-10, 10],[-10, 10]])
-  plt.savefig('./plt/plt%d.png' % i)
+  # hist = ax.hist2d(x, y, bins=100, range=[[-10, 10],[-10, 10]])
+  # plt.savefig('./plt/plt%d.png' % i)
 
 
