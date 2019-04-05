@@ -62,8 +62,8 @@ def annotate_anomaly(video, frame, X, Y):
 
 
 def findAnomaly(video):
-	for i in range(0, HEIGHT / BLOCK_HEIGHT):
-		for j in range(0, (WIDTH / BLOCK_WIDTH) + bool(WIDTH % BLOCK_WIDTH)):
+	for i in range(0, int(HEIGHT / BLOCK_HEIGHT) + bool(HEIGHT % BLOCK_HEIGHT)):
+		for j in range(0, int (WIDTH / BLOCK_WIDTH) + bool(WIDTH % BLOCK_WIDTH)):
 			for f in range(FRAME_DISTANCE, len(difference)):
 				if (same(f - FRAME_DISTANCE, i, j) and differ(f, i, j) and same(f + FRAME_DISTANCE, i, j)):
 					print("[ANOMALY] Video %d, frame %d, block (%d, %d)" % (video, f, i, j))
