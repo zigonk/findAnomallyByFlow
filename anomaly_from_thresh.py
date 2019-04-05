@@ -19,7 +19,8 @@ def isDifferent(image, X, Y):
 	count = 0
 	for i in range(X, min(X + BLOCK_HEIGHT, HEIGHT)):
 		for j in range(Y, min(Y + BLOCK_WIDTH, WIDTH)):
-			count += image[i][j]
+			print(image[i][j])
+			count += (image[i][j] == 255)
 	if (count / float(BLOCK_HEIGHT * BLOCK_WIDTH) >= DIFFERENCE_THRESH):
 		return 1
 	else:
