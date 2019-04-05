@@ -31,6 +31,7 @@ def calculate_difference(videoNo, file):
 	if not os.path.exists(src):
 		return False
 	image = cv2.imread(src)
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	diff = np.zeros((HEIGHT, WIDTH))
 	for i in range(0, HEIGHT, BLOCK_HEIGHT):
 		for j in range(0, WIDTH, BLOCK_WIDTH):
