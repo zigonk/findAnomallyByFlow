@@ -30,10 +30,9 @@ def calculate_difference(videoNo, file):
 	if not os.path.exists(src):
 		return False
 	image = cv2.imread(src)
-	height, width = image.shape
-	diff = np.zeros((height, width))
-	for i in range(0, height, BLOCK_HEIGHT):
-		for j in range(0, width, BLOCK_WIDTH):
+	diff = np.zeros((HEIGHT, WIDTH))
+	for i in range(0, HEIGHT, BLOCK_HEIGHT):
+		for j in range(0, WIDTH, BLOCK_WIDTH):
 			diff[i / BLOCK_HEIGHT][j / BLOCK_WIDTH] = isDifferent(image, i, j)
 	difference.append(diff)
 
