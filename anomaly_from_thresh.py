@@ -75,6 +75,7 @@ def createDirectory(directory):
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 
+global difference
 
 for video in range(1, 101):
 	print("Processing %d" % video)
@@ -85,7 +86,7 @@ for video in range(1, 101):
 	files = os.listdir(thresh_directory)
 	number_files = len(files)
 
-	global difference = []
+	difference = []
 
 	for i in range(0, number_files):
 		currentFile = "%05d.jpg" % (i * 30)
