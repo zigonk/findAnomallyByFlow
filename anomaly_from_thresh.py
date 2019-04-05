@@ -91,7 +91,7 @@ for video in range(1, 101):
 
 	for i in range(0, number_files):
 		currentFile = "%05d.jpg" % (i * 30)
-		detect_difference(video, currentFile)
+		calculate_difference(video, currentFile)
 	findAnomaly(video)
 
 output.close()
