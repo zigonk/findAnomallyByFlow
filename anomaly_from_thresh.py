@@ -26,7 +26,7 @@ def isDifferent(image, X, Y):
 		return 0
 
 def calculate_difference(videoNo, file):
-  src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
+	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
 	if not os.path.exists(src):
 		return False
 	image = cv2.imread(src)
