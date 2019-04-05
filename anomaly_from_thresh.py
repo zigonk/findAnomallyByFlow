@@ -82,6 +82,7 @@ for video in range(1, 101):
 	previousFile = None
 
 	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly" % video)
+	thresh_directory = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video	
 
 	files = os.listdir(thresh_directory)
 	number_files = len(files)
