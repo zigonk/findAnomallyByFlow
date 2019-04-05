@@ -19,7 +19,6 @@ def isDifferent(image, X, Y):
 	count = 0
 	for i in range(X, min(X + BLOCK_HEIGHT, HEIGHT)):
 		for j in range(Y, min(Y + BLOCK_WIDTH, WIDTH)):
-			print(image[i][j])
 			count += (image[i][j] == 255)
 	if (count / float(BLOCK_HEIGHT * BLOCK_WIDTH) >= DIFFERENCE_THRESH):
 		return 1
@@ -35,7 +34,7 @@ def calculate_difference(videoNo, file):
 	diff = np.zeros((HEIGHT, WIDTH))
 	for i in range(0, HEIGHT, BLOCK_HEIGHT):
 		for j in range(0, WIDTH, BLOCK_WIDTH):
-			diff[i / BLOCK_HEIGHT][j / BLOCK_WIDTH] = isDifferent(image, i, j)
+			diff[int(i / BLOCK_HEIGHT)][(int)(j / BLOCK_WIDTH)] = isDifferent(image, i, j)
 	difference.append(diff)
 
 
