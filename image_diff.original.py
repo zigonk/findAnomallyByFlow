@@ -15,10 +15,10 @@ args = vars(ap.parse_args())
 # load the two input images
 imageA = cv2.imread(args["first"])
 imageB = cv2.imread(args["second"])
-x = 690
-y = 100
-h = 25
-w = 25
+# x = 400
+# y = 160
+# h = 20
+# w = 20
 # imageA = imageA[y:y+h, x:x+w]
 # imageB = imageB[y:y+h, x:x+w]
 
