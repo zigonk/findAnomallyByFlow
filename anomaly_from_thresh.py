@@ -35,7 +35,7 @@ def calculate_difference(videoNo, file):
 	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
 	# src = "./difference/%d/thresh/%s" % (videoNo, file)
 	if not os.path.exists(src):
-		difference.append(zeros(HEIGHT, WIDTH))
+		difference.append(np.zeros(HEIGHT, WIDTH))
 		return False
 	image = cv2.imread(src)
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
