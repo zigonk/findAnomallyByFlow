@@ -96,7 +96,7 @@ def createDirectory(directory):
 
 global difference
 
-for video in range(1, 101):
+for video in range(68, 101):
 	print("Processing %d" % video)
 	previousFile = None
 
