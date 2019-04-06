@@ -34,8 +34,11 @@ def isDifferent(image, X, Y):
 def calculate_difference(videoNo, file):
 	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
 	# src = "./difference/%d/thresh/%s" % (videoNo, file)
+
+	diff = np.zeros((HEIGHT, WIDTH))
+
 	if not os.path.exists(src):
-		difference.append(np.zeros(HEIGHT, WIDTH))
+		difference.append(diff)
 		return False
 	image = cv2.imread(src)
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -43,7 +46,6 @@ def calculate_difference(videoNo, file):
 	# cv2.waitKey(1)
 	# global tmp
 	# tmp = image
-	diff = np.zeros((HEIGHT, WIDTH))
 	for i in range(0, HEIGHT, BLOCK_HEIGHT):
 		for j in range(0, WIDTH, BLOCK_WIDTH):
 			diff[int(i / BLOCK_HEIGHT)][(int)(j / BLOCK_WIDTH)] = isDifferent(image, i, j)
