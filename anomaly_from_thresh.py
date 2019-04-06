@@ -32,16 +32,16 @@ def isDifferent(image, X, Y):
 		return 0
 
 def calculate_difference(videoNo, file):
-	# src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
-	src = "./difference/%d/thresh/%s" % (videoNo, file)
+	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
+	# src = "./difference/%d/thresh/%s" % (videoNo, file)
 	if not os.path.exists(src):
 		return False
 	image = cv2.imread(src)
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	cv2.imshow('bw', image)
-	cv2.waitKey(1)
-	global tmp
-	tmp = image
+	# cv2.imshow('bw', image)
+	# cv2.waitKey(1)
+	# global tmp
+	# tmp = image
 	diff = np.zeros((HEIGHT, WIDTH))
 	for i in range(0, HEIGHT, BLOCK_HEIGHT):
 		for j in range(0, WIDTH, BLOCK_WIDTH):
@@ -53,7 +53,6 @@ def same(frame, X, Y):
 	count = 0
 	for i in range(frame, min(frame + FRAME_DISTANCE, len(difference))):
 		count += difference[i][X][Y]
-		print(difference[i][X][Y])
 	if (count / float(FRAME_DISTANCE) <= CONTINUOUS_FRAME_DIFF_THRESH):
 		return True
 	else :
@@ -66,12 +65,12 @@ def annotate_anomaly(video, frame, X, Y):
 	file  = "%05d.jpg" % (frame * 30)
 	x = X * BLOCK_HEIGHT
 	y = Y * BLOCK_WIDTH
-	# src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (video, file)
-	src = "./difference/%d/thresh/%s" % (video, file)
+	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (video, file)
+	# src = "./difference/%d/thresh/%s" % (video, file)
 	img = cv2.imread(src)
 	cv2.rectangle(img,(y, x),(y + BLOCK_HEIGHT, x + BLOCK_WIDTH),(255, 0, 0), 2)
-	# outsrc = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly/%s" % (video, file)
-	outsrc = "./difference/%d/anomaly/%s" % (video, file)
+	outsrc = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly/%s" % (video, file)
+	# outsrc = "./difference/%d/anomaly/%s" % (video, file)
 	cv2.imwrite(outsrc, img)
 
 
@@ -95,17 +94,17 @@ for video in range(58, 59):
 	print("Processing %d" % video)
 	previousFile = None
 
-	# createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly" % video)
-	# thresh_directory = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video	
-	thresh_directory = "./difference/%d/thresh" % video
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly" % video)
+	thresh_directory = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video	
+	# thresh_directory = "./difference/%d/thresh" % video
 
 	files = os.listdir(thresh_directory)
 	number_files = len(files)
 
 	difference = []
 
-	# for i in range(FRAME_DISTANCE, number_files):
-	for i in range(0, number_files):
+	# for lacking first frames
+	for i in range(8, number_files + 8):
 		currentFile = "%05d.jpg" % (i * 30)
 		print(currentFile)
 		calculate_difference(video, currentFile)
