@@ -13,7 +13,7 @@ BLOCK_HEIGHT = 20
 HEIGHT = 410
 WIDTH = 800
 
-output = open("output.txt","w+")
+output = open("/content/drive/My Drive/AIC_2019_Train_Cut/difference/output.txt","w+")
 
 def isDifferent(image, X, Y):
 	count = 0
@@ -35,6 +35,7 @@ def calculate_difference(videoNo, file):
 	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
 	# src = "./difference/%d/thresh/%s" % (videoNo, file)
 	if not os.path.exists(src):
+		difference.append([])
 		return False
 	image = cv2.imread(src)
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -78,6 +79,9 @@ def findAnomaly(video):
 	for i in range(0, int(HEIGHT / BLOCK_HEIGHT) + bool(HEIGHT % BLOCK_HEIGHT)):
 		for j in range(0, int (WIDTH / BLOCK_WIDTH) + bool(WIDTH % BLOCK_WIDTH)):
 			for f in range(FRAME_DISTANCE, len(difference)):
+				# for missing first frames
+				if (f - FRAME_DISTANCE < 8):
+					continue
 				if (same(f - FRAME_DISTANCE, i, j) and differ(f, i, j) and same(f + FRAME_DISTANCE, i, j)):
 					print("[ANOMALY] Video %d, frame %d, block (%d, %d)" % (video, f, i, j))
 					annotate_anomaly(video, f, i, j)
@@ -104,7 +108,7 @@ for video in range(1, 101):
 	difference = []
 
 	# for lacking first frames
-	for i in range(8, number_files + 8):
+	for i in range(0, number_files + 8):
 		currentFile = "%05d.jpg" % (i * 30)
 		print(currentFile)
 		calculate_difference(video, currentFile)
