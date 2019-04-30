@@ -5,15 +5,16 @@ import cv2
 import os
 import numpy as np
 
-FRAME_DISTANCE = 15
-DIFFERENCE_THRESH = 0.4
+FRAME_DISTANCE = 60
+DIFFERENCE_THRESH = 0.5
 CONTINUOUS_FRAME_DIFF_THRESH = 0.6
 BLOCK_WIDTH = 20
 BLOCK_HEIGHT = 20
 HEIGHT = 410
 WIDTH = 800
 
-output = open("/content/drive/My Drive/AIC_2019_Train_Cut/difference/output.txt","w+")
+output = open("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/output(FD=60,DT=0.5,CFDT=0.6).txt","w+")
+output.write("FRAME_DISTANCE: %d, DIFFERENCE_THRESH: %f, CONTINUOUS_FRAME_DIFF_THRESH: %d, WD: %d %d" % (FRAME_DISTANCE, DIFFERENCE_THRESH, CONTINUOUS_FRAME_DIFF_THRESH, WIDTH, HEIGHT))
 
 def isDifferent(image, X, Y):
 	count = 0
@@ -32,7 +33,7 @@ def isDifferent(image, X, Y):
 		return 0
 
 def calculate_difference(videoNo, file):
-	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, file)
+	src = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/thresh/%s" % (videoNo, file)
 	# src = "./difference/%d/thresh/%s" % (videoNo, file)
 
 	diff = np.zeros((HEIGHT, WIDTH))
@@ -68,11 +69,11 @@ def annotate_anomaly(video, frame, X, Y):
 	file  = "%05d.jpg" % (frame * 30)
 	x = X * BLOCK_HEIGHT
 	y = Y * BLOCK_WIDTH
-	src = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (video, file)
+	src = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/thresh/%s" % (video, file)
 	# src = "./difference/%d/thresh/%s" % (video, file)
 	img = cv2.imread(src)
 	cv2.rectangle(img,(y, x),(y + BLOCK_HEIGHT, x + BLOCK_WIDTH),(255, 0, 0), 2)
-	outsrc = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly/%s" % (video, file)
+	outsrc = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/anomaly/%s" % (video, file)
 	# outsrc = "./difference/%d/anomaly/%s" % (video, file)
 	cv2.imwrite(outsrc, img)
 
@@ -96,12 +97,12 @@ def createDirectory(directory):
 
 global difference
 
-for video in range(68, 101):
+for video in range(1, 101):
 	print("Processing %d" % video)
 	previousFile = None
 
-	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/anomaly" % video)
-	thresh_directory = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video	
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/anomaly" % video)
+	thresh_directory = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/thresh" % video	
 	# thresh_directory = "./difference/%d/thresh" % video
 
 	files = os.listdir(thresh_directory)

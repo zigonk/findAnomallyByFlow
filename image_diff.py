@@ -24,12 +24,14 @@ def calculate_confidence(diff, x, y, w, h):
 
 def calculate_diff(videoNo, A, B):
 	# load the two input images
-	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, A)
-	srcB = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d/%s" % (videoNo, B)
+	srcA = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/bg_frames/%d/%s" % (videoNo, A)
+	srcB = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/bg_frames/%d/%s" % (videoNo, B)
+
 	if not os.path.exists(srcA):
 		return
 	if not os.path.exists(srcB):
 		return
+
 	imageA = cv2.imread(srcA)
 	imageB = cv2.imread(srcB)
 	# x = 690
@@ -78,9 +80,9 @@ def calculate_diff(videoNo, A, B):
 	# cv2.imshow("Thresh", thresh)
 	# cv2.waitKey(0)
 	
-	srcOriginal = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original/%s" % (videoNo, B)
-	srcDiff = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff/%s" % (videoNo, B)
-	srcThresh = "/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh/%s" % (videoNo, B)
+	srcOriginal = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/original/%s" % (videoNo, B)
+	srcDiff = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/diff/%s" % (videoNo, B)
+	srcThresh = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/thresh/%s" % (videoNo, B)
 	cv2.imwrite(srcOriginal, imageB)
 	cv2.imwrite(srcDiff, diff)
 	cv2.imwrite(srcThresh, thresh)
@@ -89,16 +91,16 @@ def createDirectory(directory):
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 
-FRAME_DISTANCE = 15
+FRAME_DISTANCE = 60
 
-for video in range(1, 101):
+for video in range(14, 101):
 	print("Processing %d" % video)
 	previousFile = None
-	directory = "/content/drive/My Drive/AIC_2019_Train_Cut/cut_video_bg_frames/%d" % video
-	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d" % video)
-	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/original" % video)
-	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/diff" % video)
-	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut/difference/%d/thresh" % video)
+	directory = "/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/bg_frames/%d" % video
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/original" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/diff" % video)
+	createDirectory("/content/drive/My Drive/AIC_2019_Train_Cut_abs(3)/difference/%d/thresh" % video)
 
 	files = os.listdir(directory)
 	number_files = len(files)
